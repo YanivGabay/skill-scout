@@ -41,6 +41,7 @@ python3 ~/.claude/skills/skill-scout/scripts/install_hook.py
 ## How it decides
 
 - **Skips trivial deps** — types, linters, formatters, tiny utilities.
+- **Rust crates → [Symposium](https://github.com/symposium-dev/symposium).** Symposium installs crate-authored, version-matched skills natively, so skill-scout doesn't duplicate it: it detects whether `cargo agents` is installed and either offers `cargo agents sync` or recommends installing it (project hook scope). npm and Python deps in the same repo are still scouted.
 - **Groups packages into products** — `@remotion/*` → Remotion, `wrangler` + `@cloudflare/*` → Cloudflare.
 - **Search order** — vendor's own GitHub → skills shipped in the package → [skills.sh](https://skills.sh) → [Tessl](https://tessl.io/registry) → [Context7](https://context7.com) as a fallback.
 - **Trust tiers** — `official` and `vendor-partner` are recommended; `community` only when clearly valuable and after reading its code; `unknown` never.
@@ -52,7 +53,7 @@ python3 ~/.claude/skills/skill-scout/scripts/install_hook.py
 - [skills-npm](https://github.com/antfu/skills-npm), [skillpm](https://skillpm.dev) — link skills that npm packages ship themselves.
 - [Tessl](https://tessl.io) — registry of version-accurate usage specs.
 
-`skill-scout` is the glue: it works across ecosystems and finds skills that live *outside* the package.
+`skill-scout` is complementary, not a replacement: Symposium is the right model when authors publish plugins (and skill-scout hands Rust to it), while skill-scout finds skills that live *outside* the package — the common case today for npm and Python.
 
 ## License
 

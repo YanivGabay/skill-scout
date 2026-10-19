@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import sys
 import tomllib
 from pathlib import Path
@@ -125,6 +126,14 @@ def installed_skills(root: Path):
     }
 
 
+def symposium_status():
+    binary = shutil.which("cargo-agents") or (
+        str(Path("~/.cargo/bin/cargo-agents").expanduser())
+        if Path("~/.cargo/bin/cargo-agents").expanduser().exists() else None)
+    return {"installed": bool(binary),
+            "initialized": Path("~/.symposium/config.toml").expanduser().exists()}
+
+
 def collect(root: Path):
     all_deps = npm_deps(root) + cargo_deps(root) + python_deps(root)
     seen, significant, skipped = set(), [], set()
@@ -156,6 +165,8 @@ def main():
         print(result["hash"] if result["dependencies"] else "")
         return
     result["installed_skills"] = installed_skills(root)
+    if "cargo" in result["ecosystems"]:
+        result["symposium"] = symposium_status()
     print(json.dumps(result, indent=2, ensure_ascii=False))
 
 

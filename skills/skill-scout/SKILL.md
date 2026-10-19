@@ -19,11 +19,21 @@ python3 <skill-dir>/scripts/deps.py
 
 It prints JSON: significant `dependencies` (name, version, ecosystem, dev flag, manifest), `skipped_trivial`, and `installed_skills` (global, project, plugins). If `dependencies` is empty, say so and stop.
 
-### 2. Shortlist candidates
+### 2. Route Rust crates to Symposium
+
+If `ecosystems` includes `cargo`, do not search for per-crate Rust skills — [Symposium](https://github.com/symposium-dev/symposium) does that natively from crate-authored plugins, version-matched and kept in sync. Remove `cargo` dependencies from the candidate list and handle them by the `symposium` status in the inventory:
+
+- **installed + initialized** → offer to run `cargo agents sync` in the project (it installs whatever its registry matches, plus a general Rust best-practices skill).
+- **installed, not initialized** → `cargo agents init` is interactive; ask the user to run `! cargo agents init` themselves and recommend **project** hook scope so it doesn't hook every non-Rust session.
+- **not installed** → recommend it in the final table as one row ("Rust crates → Symposium"), with install `cargo binstall symposium` (or `cargo install symposium`) followed by the init step above. Never install it unasked.
+
+Rust tooling that is not a crate concern (e.g. a deploy platform used by the Rust service) still goes through the normal search below. npm and Python dependencies in the same repo are always searched normally.
+
+### 3. Shortlist candidates
 
 From the dependency list, keep the ones likely to deserve a skill (platforms, frameworks, fast-moving SDKs, ORMs, browser/test tooling — see `references/sources.md` → "Worth a skill vs not"). Group related packages under one product (e.g. `@remotion/*` → Remotion, `wrangler` + `@cloudflare/*` → Cloudflare). Drop any product already covered by an installed skill or plugin.
 
-### 3. Search with a subagent
+### 4. Search with a subagent
 
 Spawn one `general-purpose` subagent (two in parallel if there are more than ~10 products) with:
 - the product list (package names + versions),
@@ -32,11 +42,11 @@ Spawn one `general-purpose` subagent (two in parallel if there are more than ~10
 
 Instruct the subagent to research only — never install anything.
 
-### 4. Present and confirm
+### 5. Present and confirm
 
 Show one table: product → skill → source → tier → why. Then ask which to install (AskUserQuestion, multi-select). Default to recommending only `official` and `vendor-partner` items. Never install without an explicit yes.
 
-### 5. Install and record
+### 6. Install and record
 
 For each approved skill, run the project-scope install command from `references/sources.md`, then verify the skill directory exists under `.claude/skills/`. Finally record the scout so the SessionStart hook stays quiet until dependencies change:
 
