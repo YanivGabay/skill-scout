@@ -42,19 +42,19 @@ Spawn one `general-purpose` subagent (two in parallel if there are more than ~10
 
 Instruct the subagent to research only — never install anything.
 
-### 5. Present and confirm
+### 5. Record, present and confirm
 
-Show one table: product → skill → source → tier → why. Then ask which to install (AskUserQuestion, multi-select). Default to recommending only `official` and `vendor-partner` items. Never install without an explicit yes.
-
-### 6. Install and record
-
-For each approved skill, run the project-scope install command from `references/sources.md`, then verify the skill directory exists under `.claude/skills/`. Finally record the scout so the SessionStart hook stays quiet until dependencies change:
+Record the scout **before** asking anything, so the SessionStart hook goes quiet even if the user dismisses the question or the session ends:
 
 ```bash
 python3 <skill-dir>/scripts/cache.py mark
 ```
 
-If the user declines everything, record it anyway with `cache.py mark --dismiss`. Mention that project installs create `skills-lock.json`, and let the user decide whether to commit it.
+Then show one table: product → skill → source → tier → why. Ask which to install (AskUserQuestion, multi-select). Default to recommending only `official` and `vendor-partner` items. Never install without an explicit yes; a dismissed question means install nothing.
+
+### 6. Install
+
+For each approved skill, run the project-scope install command from `references/sources.md`, then verify the skill directory exists under `.claude/skills/`. Mention that project installs create `skills-lock.json`, and let the user decide whether to commit it.
 
 ## SessionStart hook (optional)
 
